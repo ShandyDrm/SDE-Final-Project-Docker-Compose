@@ -1,0 +1,61 @@
+version: "3"
+services:
+  process-hangman:
+    build: https://github.com/ShandyDrm/process-hangman.git#main
+    ports:
+      - "4003:4003"
+    environment:
+      BUSINESS_LOGIC_GAME_URL: http://business-logic-game:4002
+      BUSINESS_LEADERBOARD_URL: http://business-logic-leaderboard:5001
+    links:
+      - "business-logic-game"
+      - "business-logic-leaderboard"
+  business-logic-leaderboard:
+    build: https://github.com/ShandyDrm/business-logic-leaderboard.git#main
+    ports:
+      - "5001:5001"
+    environment:
+      DATA_LEADERBOARD_URL: http://data-leaderboard:5000
+    links:
+      - "data-leaderboard"
+  data-leaderboard:
+    build: https://github.com/ShandyDrm/data-leaderboard.git#main
+    ports:
+      - "5000:5000"
+    links:
+      - "data-leaderboard-db"
+  data-leaderboard-db:
+    image: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  business-logic-game:
+    build: https://github.com/ShandyDrm/business-logic-game.git#main
+    ports:
+      - "4002:4002"
+    environment:
+      DATA_GAME_SESSION_URL: http://data-game-session:4001
+    links:
+      - "data-game-session"
+  data-game-session:
+    build: https://github.com/ShandyDrm/data-game-session.git#main
+    ports:
+      - "4001:4001"
+    environment:
+      ADAPTER_RANDOM_WORD_URL: http://adapter-random-word:4000
+    links:
+      - "data-game-session-db"
+      - "adapter-random-word"
+  data-game-session-db:
+    image: postgres
+    volumes:
+      - ./tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  adapter-random-word:
+    build: https://github.com/ShandyDrm/adapter-random-word.git#main
+    ports:
+      - "4000:4000"
+    environment:
+      WORDNIK_API_KEY: <WORDNIK_API_KEY>
